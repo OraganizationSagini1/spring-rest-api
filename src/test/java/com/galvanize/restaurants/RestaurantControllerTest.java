@@ -2,7 +2,6 @@ package com.galvanize.restaurants;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.beans.HasProperty;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,21 +9,18 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import javax.servlet.ServletContext;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 public class RestaurantControllerTest {
-    private static String ERROR_MESSAGE="Restuarant name cant be blank";
+    private static String ERROR_MESSAGE="Restaurant name can't be blank";
     @Autowired
     private MockMvc mockMvc;
 
@@ -41,17 +37,17 @@ public class RestaurantControllerTest {
 
 
     @Autowired
-    RestaurantRespository respository;
+    RestaurantRespository repository;
 
     @Before
     public void before() {
-        respository.deleteAll();
+        repository.deleteAll();
 
     }
 
     @After
     public void after() {
-        respository.deleteAll();
+        repository.deleteAll();
 
     }
 
@@ -80,7 +76,7 @@ public class RestaurantControllerTest {
 
         //setup
         Restaurant pizzaHut = new Restaurant(Long.MIN_VALUE,"pizzaHut");
-        respository.save(pizzaHut);
+        repository.save(pizzaHut);
 
         //exercise
         final String response = mockMvc.perform(get("/api/restaurants"))
@@ -102,7 +98,7 @@ public class RestaurantControllerTest {
 
 
     @Test
-    public void addRestaturantReturnsSuccess() throws Exception {
+    public void addRestaurantReturnsSuccess() throws Exception {
 
         //setup
         Restaurant pizzaHut = new Restaurant(Long.MIN_VALUE,"pizzaHut");
@@ -123,9 +119,10 @@ public class RestaurantControllerTest {
         //Assert
         assertThat(actual.getId(), is(any(Long.class)));
         assertThat(actual.getName(), is("pizzaHut"));
+
     }
     @Test
-    public void addRestaturantReturnsErrorCodeForBlank() throws Exception {
+    public void addRestaurantReturnsErrorCodeForBlank() throws Exception {
 
         //setup
         Restaurant pizzaHut = new Restaurant(Long.MIN_VALUE,"");
@@ -138,7 +135,7 @@ public class RestaurantControllerTest {
                 .andExpect(status().isBadRequest())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
+                .getHeader("Message");
 
         //Assert
         assertThat(response, is(ERROR_MESSAGE));
@@ -147,7 +144,7 @@ public class RestaurantControllerTest {
 
     }
     @Test
-    public void addRestaturantReturnsErrorCodeForNULL() throws Exception {
+    public void addRestaurantReturnsErrorCodeForNULL() throws Exception {
 
         //setup
         Restaurant pizzaHut = new Restaurant(Long.MIN_VALUE,null);
@@ -160,7 +157,7 @@ public class RestaurantControllerTest {
                 .andExpect(status().isBadRequest())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
+                .getHeader("Message");
 
         //Assert
         assertThat(response, is(ERROR_MESSAGE));
@@ -169,7 +166,7 @@ public class RestaurantControllerTest {
 
     }
     @Test
-    public void addRestaturantReturnsErrorCodeForSpace() throws Exception {
+    public void addRestaurantReturnsErrorCodeForSpace() throws Exception {
 
         //setup
         Restaurant pizzaHut = new Restaurant(Long.MIN_VALUE,"   ");
@@ -182,7 +179,9 @@ public class RestaurantControllerTest {
                 .andExpect(status().isBadRequest())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
+                .getHeader("Message");
+
+
 
 
         //Assert
@@ -190,6 +189,72 @@ public class RestaurantControllerTest {
 
 
 
+    }
+    @Test
+    public void deleteRestaurantReturnsErrorCodeForNotFound() throws Exception {
+
+        //exercise
+        final String response = mockMvc.perform(MockMvcRequestBuilders
+                .delete("/api/restaurants/{id}", "11")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse()
+                .getContentAsString();
+
+        //Assert
+        assertThat(response, is("Restaurant not found. Cannot be deleted"));
+
+
+
+    }
+    @Test
+    public void deleteRestaurantDeletesRestaurantAndReturnsSuccessCode() throws Exception {
+        //setup
+        Restaurant restaurant = new Restaurant(Long.MIN_VALUE,"Fred's");
+        repository.save(restaurant);
+        Iterable<Restaurant> restaurants = repository.findAll();
+        Long id = restaurants.iterator().next().getId();
+
+        //exercise
+        final String response = mockMvc.perform(MockMvcRequestBuilders
+                .delete("/api/restaurants/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse()
+                .getContentAsString();
+
+
+        //Assert
+        assertThat(response, is("Restaurant is deleted"));
+
+    }
+
+    @Test
+    public void updateRestaurantUpdatesRestaurantSuccessfully() throws Exception{
+        //setup
+        Restaurant restaurant = new Restaurant(Long.MIN_VALUE,"PizzaHut");
+        repository.save(restaurant);
+        Iterable<Restaurant> restaurants = repository.findAll();
+        Long id = restaurants.iterator().next().getId();
+
+
+        //restaurant to be updated
+        Restaurant updaterestaurant = new Restaurant(id,"test");
+
+        //exercise
+        final String response = mockMvc.perform(MockMvcRequestBuilders
+                .put("/api/restaurants/{id}", id)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(OBJECT_MAPPER.writeValueAsString(updaterestaurant))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Restaurant actual = OBJECT_MAPPER.readValue(response, Restaurant.class);
+        //Assert
+        assertThat(actual.getName(), is("test"));
     }
 
 }

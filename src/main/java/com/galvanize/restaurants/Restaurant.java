@@ -14,10 +14,10 @@ public final class Restaurant {
     @SequenceGenerator(name = "restaurant_generator", sequenceName = "restaurant_sequence")
     private final Long id;
 
-    private final String name;
+    private String name;
 
     @JsonCreator
-    Restaurant(@JsonProperty("id") final long id, @JsonProperty("name") final String name) {
+    Restaurant(@JsonProperty("id") final Long id, @JsonProperty("name") final String name) {
         this.id = id;
         this.name = name;
     }
@@ -32,6 +32,10 @@ public final class Restaurant {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name){
+        this.name = name;
     }
 
     @Override
