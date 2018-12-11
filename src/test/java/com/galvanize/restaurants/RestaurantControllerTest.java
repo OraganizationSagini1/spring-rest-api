@@ -188,31 +188,5 @@ public class RestaurantControllerTest {
 
 
     }
-    //restaurant.getName()==null || restaurant.getName().length()==0 ||
 
-
-
-//    @Test
-//    public void deleteRestaturant() throws Exception {
-//
-//        //setup
-//        Restaurant pizzaHut = new Restaurant("pizzaHut");
-//
-//        //exercise
-//        final String response = mockMvc.perform(MockMvcRequestBuilders.post("/api/restaurants")
-//                .accept(MediaType.APPLICATION_JSON)
-//                .content(OBJECT_MAPPER.writeValueAsString(pizzaHut))
-//                .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isOk())
-//                .andReturn()
-//                .getResponse()
-//                .getContentAsString();
-//
-//
-//        Restaurant actual = OBJECT_MAPPER.readValue(response, Restaurant.class);
-//
-//        //Assert
-//        assertThat(actual.getId(), is(any(Long.class)));
-//        assertThat(actual.getName(), is("pizzaHut"));
-//    }
 }
