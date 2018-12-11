@@ -9,7 +9,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 public class RestaurantControllerTest {
+    private static String ERROR_MESSAGE="Restuarant name cant be blank";
     @Autowired
     private MockMvc mockMvc;
 
@@ -96,7 +99,7 @@ public class RestaurantControllerTest {
 
 
     @Test
-    public void addRestaturant() throws Exception {
+    public void addRestaturantReturnsSuccess() throws Exception {
 
         //setup
         Restaurant pizzaHut = new Restaurant("pizzaHut");
@@ -118,6 +121,75 @@ public class RestaurantControllerTest {
         assertThat(actual.getId(), is(any(Long.class)));
         assertThat(actual.getName(), is("pizzaHut"));
     }
+    @Test
+    public void addRestaturantReturnsErrorCodeForBlank() throws Exception {
+
+        //setup
+        Restaurant pizzaHut = new Restaurant("");
+
+        //exercise
+        final String response = mockMvc.perform(MockMvcRequestBuilders.post("/api/restaurants")
+                .accept(MediaType.APPLICATION_JSON)
+                .content(OBJECT_MAPPER.writeValueAsString(pizzaHut))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        //Assert
+        assertThat(response, is(ERROR_MESSAGE));
+
+
+
+    }
+    @Test
+    public void addRestaturantReturnsErrorCodeForNULL() throws Exception {
+
+        //setup
+        Restaurant pizzaHut = new Restaurant(null);
+
+        //exercise
+        final String response = mockMvc.perform(MockMvcRequestBuilders.post("/api/restaurants")
+                .accept(MediaType.APPLICATION_JSON)
+                .content(OBJECT_MAPPER.writeValueAsString(pizzaHut))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        //Assert
+        assertThat(response, is(ERROR_MESSAGE));
+
+
+
+    }
+    @Test
+    public void addRestaturantReturnsErrorCodeForSpace() throws Exception {
+
+        //setup
+        Restaurant pizzaHut = new Restaurant("   ");
+
+        //exercise
+        final String response = mockMvc.perform(MockMvcRequestBuilders.post("/api/restaurants")
+                .accept(MediaType.APPLICATION_JSON)
+                .content(OBJECT_MAPPER.writeValueAsString(pizzaHut))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+
+        //Assert
+        assertThat(response, is(ERROR_MESSAGE));
+
+
+
+    }
+    //restaurant.getName()==null || restaurant.getName().length()==0 ||
+
 
 
 //    @Test
