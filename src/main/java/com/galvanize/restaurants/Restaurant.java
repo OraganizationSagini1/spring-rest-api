@@ -1,63 +1,58 @@
 package com.galvanize.restaurants;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-public class Restaurant {
-
-    private String name;
+public final class Restaurant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "restaurant_generator")
     @SequenceGenerator(name = "restaurant_generator", sequenceName = "restaurant_sequence")
-    private Long id;
+    private final Long id;
 
-    Restaurant() {
+    private final String name;
 
-    }
-
-
-    public Restaurant(String name) {
+    @JsonCreator
+    Restaurant(@JsonProperty("id") final long id, @JsonProperty("name") final String name) {
+        this.id = id;
         this.name = name;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    private Restaurant() {
+        this(Long.MIN_VALUE, null);
     }
 
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    @Override
-    public String toString() {
-        return "Restaurant{" +
-                "name='" + name + '\'' +
-                ", id=" + id +
-                '}';
+    public String getName() {
+        return name;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Restaurant)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         Restaurant that = (Restaurant) o;
-        return Objects.equals(getName(), that.getName()) &&
-                Objects.equals(getId(), that.getId());
+        return id.equals(that.id) &&
+                name.equals(that.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName(), getId());
+        return Objects.hash(id, name);
+    }
+
+    @Override
+    public String toString() {
+        return "Restaurant{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

@@ -2,6 +2,7 @@ package com.galvanize.restaurants;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.beans.HasProperty;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,7 +79,7 @@ public class RestaurantControllerTest {
     public void getRestaurantsReturnOneRestaturant() throws Exception {
 
         //setup
-        Restaurant pizzaHut = new Restaurant("pizzaHut");
+        Restaurant pizzaHut = new Restaurant(Long.MIN_VALUE,"pizzaHut");
         respository.save(pizzaHut);
 
         //exercise
@@ -94,7 +95,9 @@ public class RestaurantControllerTest {
                 });
 
         //Assert
-        assertThat(actual, contains(pizzaHut));
+        assertThat(actual,contains(
+                hasProperty("name", is("pizzaHut"))
+        ));
     }
 
 
@@ -102,7 +105,7 @@ public class RestaurantControllerTest {
     public void addRestaturantReturnsSuccess() throws Exception {
 
         //setup
-        Restaurant pizzaHut = new Restaurant("pizzaHut");
+        Restaurant pizzaHut = new Restaurant(Long.MIN_VALUE,"pizzaHut");
 
         //exercise
         final String response = mockMvc.perform(MockMvcRequestBuilders.post("/api/restaurants")
@@ -125,7 +128,7 @@ public class RestaurantControllerTest {
     public void addRestaturantReturnsErrorCodeForBlank() throws Exception {
 
         //setup
-        Restaurant pizzaHut = new Restaurant("");
+        Restaurant pizzaHut = new Restaurant(Long.MIN_VALUE,"");
 
         //exercise
         final String response = mockMvc.perform(MockMvcRequestBuilders.post("/api/restaurants")
@@ -147,7 +150,7 @@ public class RestaurantControllerTest {
     public void addRestaturantReturnsErrorCodeForNULL() throws Exception {
 
         //setup
-        Restaurant pizzaHut = new Restaurant(null);
+        Restaurant pizzaHut = new Restaurant(Long.MIN_VALUE,null);
 
         //exercise
         final String response = mockMvc.perform(MockMvcRequestBuilders.post("/api/restaurants")
@@ -169,7 +172,7 @@ public class RestaurantControllerTest {
     public void addRestaturantReturnsErrorCodeForSpace() throws Exception {
 
         //setup
-        Restaurant pizzaHut = new Restaurant("   ");
+        Restaurant pizzaHut = new Restaurant(Long.MIN_VALUE,"   ");
 
         //exercise
         final String response = mockMvc.perform(MockMvcRequestBuilders.post("/api/restaurants")
