@@ -19,11 +19,9 @@ public class RestaurantController {
     RestaurantRespository repository;
 
     @GetMapping
-    Iterable<Restaurant> getRestaurants  ()
-    {
+    Iterable<Restaurant> getRestaurants() {
         return repository.findAll();
     }
-
 
     @PostMapping
     ResponseEntity<Restaurant> addRestaurants(@RequestBody Restaurant restaurant) {
@@ -47,7 +45,6 @@ public class RestaurantController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(DELETE_MESSAGE);
         }
-
     }
 
     @PutMapping("/{id}")

@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -257,4 +258,22 @@ public class RestaurantControllerTest {
         assertThat(actual.getName(), is("test"));
     }
 
+    @Test
+    public void updateRestaurantDoesNotUpdatesRestaurant() throws Exception {
+
+        Restaurant updaterestaurant = new Restaurant(Long.MIN_VALUE, "Test-100");
+
+        final String response = mockMvc.perform(MockMvcRequestBuilders
+                .put("/api/restaurants/{id}", 100)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(OBJECT_MAPPER.writeValueAsString(updaterestaurant))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        //Assert
+        assertThat(response, is("Not updated"));
+
+    }
 }
