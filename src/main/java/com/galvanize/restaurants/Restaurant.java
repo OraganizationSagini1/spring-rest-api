@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -15,6 +16,11 @@ public final class Restaurant {
     private final Long id;
 
     private String name;
+    @OneToMany(cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @JoinColumn(name = "restaurant_id")
+    private List<Review> reviews;
 
     @JsonCreator
     Restaurant(@JsonProperty("id") final Long id, @JsonProperty("name") final String name) {

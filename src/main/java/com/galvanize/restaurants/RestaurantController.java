@@ -16,21 +16,23 @@ public class RestaurantController {
     private final static String DELETE_MESSAGE="Restaurant not found. Cannot be deleted";
 
     @Autowired
-    RestaurantRespository repository;
+    RestaurantRespository restaurantRespository;
+    @Autowired
+    ReviewRepository reviewRepository;
 
     @GetMapping
     Iterable<Restaurant> getRestaurants() {
-        return repository.findAll();
+        return restaurantRespository.findAll();
     }
 
     @PostMapping
-    ResponseEntity<Restaurant> addRestaurants(@RequestBody Restaurant restaurant) {
+    ResponseEntity<Restaurant> addRestaurant(@RequestBody Restaurant restaurant) {
         HttpHeaders httpHeaders = new HttpHeaders();
         if(restaurant.getName()==null || restaurant.getName()=="" || restaurant.getName().trim().length()==0){
             httpHeaders.set("Message", ERROR_MESSAGE);
             return new ResponseEntity<>(restaurant, httpHeaders, HttpStatus.BAD_REQUEST);
         }
-        repository.save(restaurant);
+        restaurantRespository.save(restaurant);
         httpHeaders.set("Message","Post request success");
         return new ResponseEntity<>(restaurant, httpHeaders, HttpStatus.OK);
     }
@@ -38,9 +40,9 @@ public class RestaurantController {
 
     @DeleteMapping("/{id}")
     ResponseEntity<String> deleteRestaurant(@PathVariable long id) {
-        Optional<Restaurant> restaurant = repository.findById(id);
+        Optional<Restaurant> restaurant = restaurantRespository.findById(id);
         if(restaurant.isPresent()) {
-            repository.deleteById(id);
+            restaurantRespository.deleteById(id);
             return ResponseEntity.status(HttpStatus.OK).body("Restaurant is deleted");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(DELETE_MESSAGE);
@@ -49,14 +51,26 @@ public class RestaurantController {
 
     @PutMapping("/{id}")
     ResponseEntity updateRestaurant(@RequestBody Restaurant newRestaurant, @PathVariable long id) {
-        Optional<Restaurant> oldRestaurant = repository.findById(id);
+        Optional<Restaurant> oldRestaurant = restaurantRespository.findById(id);
         if(oldRestaurant.isPresent())   {
             oldRestaurant.get().setName(newRestaurant.getName());
-            repository.save(oldRestaurant.get());
+            restaurantRespository.save(oldRestaurant.get());
             return ResponseEntity.status(HttpStatus.OK).body(oldRestaurant.get());
         }
         else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not updated");
         }
+    }
+    @PutMapping("/{id}/review")
+    ResponseEntity addRestaurantReview(@RequestBody Review review,@PathVariable long id) {
+        Optional<Restaurant> restaurant = restaurantRespository.findById(id);
+       if(restaurant.isPresent()){
+            reviewRepository.save(review);
+            return ResponseEntity.status(HttpStatus.OK).body(review);
+        }else {
+
+
+           return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error saving Review");
+       }
     }
 }
