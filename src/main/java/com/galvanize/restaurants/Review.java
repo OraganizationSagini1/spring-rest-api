@@ -9,7 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 @Entity
-final class Review {
+public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "review_generator")
     @SequenceGenerator(name = "review_generator", sequenceName = "review_sequence")

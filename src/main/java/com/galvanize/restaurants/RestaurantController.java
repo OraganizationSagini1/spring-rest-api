@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -61,7 +62,7 @@ public class RestaurantController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not updated");
         }
     }
-    @PutMapping("/{id}/review")
+    @PutMapping("/{id}/reviews")
     ResponseEntity addRestaurantReview(@RequestBody Review review,@PathVariable long id) {
         Optional<Restaurant> restaurant = restaurantRespository.findById(id);
        if(restaurant.isPresent()){
@@ -72,5 +73,18 @@ public class RestaurantController {
 
            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error saving Review");
        }
+    }
+    @GetMapping("/{id}/reviews")
+    ResponseEntity getRestaurantReviews(@PathVariable long id){
+
+                Optional<Restaurant> restaurant=restaurantRespository.findById(id);
+        if(restaurant.isPresent()){
+            List<Review> review =  restaurant.get().getReviews();
+            return ResponseEntity.status(HttpStatus.OK).body(review);
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Reviews");
+        }
+
     }
 }

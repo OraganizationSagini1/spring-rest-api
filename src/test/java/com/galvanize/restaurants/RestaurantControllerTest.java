@@ -14,6 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,7 +22,6 @@ import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -38,17 +38,19 @@ public class RestaurantControllerTest {
 
 
     @Autowired
-    RestaurantRespository repository;
+    RestaurantRespository restaurantRespository;
+    @Autowired
+    ReviewRepository reviewRepository;
 
     @Before
     public void before() {
-        repository.deleteAll();
+       // restaurantRespository.deleteAll();
 
     }
 
     @After
     public void after() {
-        repository.deleteAll();
+      //  restaurantRespository.deleteAll();
 
     }
 
@@ -77,7 +79,7 @@ public class RestaurantControllerTest {
 
         //setup
         Restaurant pizzaHut = new Restaurant(Long.MIN_VALUE, "pizzaHut");
-        repository.save(pizzaHut);
+        restaurantRespository.save(pizzaHut);
 
         //exercise
         final String response = mockMvc.perform(get("/api/restaurants"))
@@ -211,8 +213,8 @@ public class RestaurantControllerTest {
     public void deleteRestaurantDeletesRestaurantAndReturnsSuccessCode() throws Exception {
         //setup
         Restaurant restaurant = new Restaurant(Long.MIN_VALUE, "Fred's");
-        repository.save(restaurant);
-        Iterable<Restaurant> restaurants = repository.findAll();
+        restaurantRespository.save(restaurant);
+        Iterable<Restaurant> restaurants = restaurantRespository.findAll();
         Long id = restaurants.iterator().next().getId();
 
         //exercise
@@ -233,8 +235,8 @@ public class RestaurantControllerTest {
     public void updateRestaurantUpdatesRestaurantSuccessfully() throws Exception {
         //setup
         Restaurant restaurant = new Restaurant(Long.MIN_VALUE, "PizzaHut");
-        repository.save(restaurant);
-        Iterable<Restaurant> restaurants = repository.findAll();
+        restaurantRespository.save(restaurant);
+        Iterable<Restaurant> restaurants = restaurantRespository.findAll();
         Long id = restaurants.iterator().next().getId();
 
 
@@ -283,7 +285,7 @@ public class RestaurantControllerTest {
 
 
         final String response = mockMvc.perform(MockMvcRequestBuilders
-                .put("/api/restaurants/{id}/review", 100)
+                .put("/api/restaurants/{id}/reviews", 100)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(OBJECT_MAPPER.writeValueAsString(review))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -302,14 +304,14 @@ public class RestaurantControllerTest {
     public void addOneReviewToRestaurantReturnsReview() throws Exception {
 
         Restaurant restaurant = new Restaurant(Long.MIN_VALUE, "Test-100");
-        repository.save(restaurant);
-        Iterable<Restaurant> restaurantAdded = repository.findAll();
+        restaurantRespository.save(restaurant);
+        Iterable<Restaurant> restaurantAdded = restaurantRespository.findAll();
         Long id = restaurantAdded.iterator().next().getId();
         Review review = new Review(1l, "test restaurant comment");
 
 
         final String response = mockMvc.perform(MockMvcRequestBuilders
-                .put("/api/restaurants/{id}/review", id)
+                .put("/api/restaurants/{id}/reviews", id)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(OBJECT_MAPPER.writeValueAsString(review))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -325,6 +327,30 @@ public class RestaurantControllerTest {
         //Assert
         assertThat(actual.getId(), is(any(Long.class)));
         assertThat(actual.getComment(), is("test restaurant comment"));
+
+    }
+    @Test
+    public void getReviewsForRestaurantReturnsReviews() throws Exception {
+        Restaurant restaurant = new Restaurant(Long.MIN_VALUE, "Test-100");
+
+        List<Review> reviewList = new ArrayList<>();
+        Review review = new Review(1l, "test");
+        reviewList.add(review);
+        restaurant.setReviews(reviewList);
+        restaurantRespository.save(restaurant);
+        Iterable<Restaurant> restaurantAdded = restaurantRespository.findAll();
+        Long id = restaurantAdded.iterator().next().getId();
+
+
+
+        String response = mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/restaurants/{id}/reviews",id))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        List<Review> actual= OBJECT_MAPPER.readValue(response, new TypeReference<List<Review>>(){});
+        assertThat(actual, contains(hasProperty("comment",is("test"))));
 
     }
 
